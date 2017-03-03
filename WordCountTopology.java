@@ -5,9 +5,7 @@ import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.utils.Utils;
 
-/**
- * Created by honey on 17. 3. 3.
- */
+
 public class WordCountTopology  {
     private static final String SENTENCE_SPOUT_ID = "sentence-spout";
     private static final String SPLIT_BOLT_ID = "split-bolt";
@@ -24,14 +22,16 @@ public class WordCountTopology  {
         TopologyBuilder builder = new TopologyBuilder();
 
         builder.setSpout(SENTENCE_SPOUT_ID, spout);
-        builder.setBolt(SPLIT_BOLT_ID, splitBolt)
+        builder.setBolt(SPLIT_BOLT_ID, splitBolt, 2)
+                .setNumTasks(4)
                 .shuffleGrouping(SENTENCE_SPOUT_ID);
-        builder.setBolt(COUNT_BOLT_ID, countBolt)
+        builder.setBolt(COUNT_BOLT_ID, countBolt,4)
                 .fieldsGrouping(SPLIT_BOLT_ID, new Fields("word"));
         builder.setBolt(REPORT_BOLT_ID, reportBolt)
                 .globalGrouping(COUNT_BOLT_ID);
 
         Config config = new Config();
+        config.setNumWorkers(2);
 
         LocalCluster cluster = new LocalCluster();
 
